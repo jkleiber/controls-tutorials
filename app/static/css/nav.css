@@ -1,12 +1,11 @@
-
 /* Navigation bar layout */
 /* Based on https://www.w3schools.com/howto/howto_css_responsive_header.asp */
 
 .header {
-    overflow: hidden;
-    padding: 20px 10px;
-  }
-  
+  overflow: hidden;
+  padding: 20px 10px;
+}
+
 /* Style the header links */
 .header a {
   float: left;
@@ -18,7 +17,7 @@
   line-height: 25px;
   border-radius: 0px;
   border-bottom: 3px solid rgba(156, 0, 0, 0);
-  transition: border 0.5s cubic-bezier(.65,.05,.36,1);
+  transition: border 0.5s cubic-bezier(.65, .05, .36, 1);
   cursor: pointer;
 }
 
@@ -53,7 +52,17 @@
     display: block;
     text-align: left;
   }
+
   .header-right {
     float: none;
   }
+}
+
+/* Footer */
+.footer {
+  overflow: hidden;
+  padding: 20px 10px;
+  background-color: rgb(156, 0, 0);
+  color: rgb(255, 255, 255);
+  margin-top: 25px;
 }
