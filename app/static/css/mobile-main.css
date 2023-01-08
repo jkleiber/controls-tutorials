@@ -1,0 +1,179 @@
+body {
+    background-color: #FFF;
+    margin: 0;
+}
+
+/*
+ * Page elements
+ */
+.page-container {
+    height: 100%;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.feature-center-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 80%;
+    width: 100%;
+}
+
+.feature-center {
+    align-self: center;
+    text-align: center;
+    margin: 0 auto;
+    /* padding-bottom: 8%; */
+}
+
+.feature-bottom-center {
+    align-self: center;
+    text-align: center;
+    margin: 0 auto;
+}
+
+
+.img-cropper {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    margin: 0 auto;
+}
+
+.personal-photo {
+    width: 100%;
+    height: auto;
+    margin-top: -15%;
+}
+
+
+/* Projects page */
+.lesson-center-container {
+    display: flex;
+    flex-direction: column;
+    height: 80%;
+    width: 100%;
+}
+
+.lesson-list {
+    align-self: center;
+    margin: 0 auto;
+    width: 95%;
+    max-width: 720px;
+    min-width: 200px;
+}
+
+.lesson-block {
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin: 30px;
+    overflow: hidden;
+}
+
+.lesson-img-frame {
+    overflow: hidden;
+    max-height: 300px;
+    margin: 0 auto;
+    position: relative;
+    /* display: inline-block; */
+}
+
+.lesson-img {
+    margin-top: -15%;
+    width: 100%;
+    height: auto;
+}
+
+.lesson-gif {
+    /* position: absolute; */
+    top: 0;
+    left: 0;
+    z-index: 99;
+    margin-top: 0;
+    width: 100%;
+    height: auto;
+    display: inline;
+}
+
+.lesson-gif-hidden {
+    margin-top: 0;
+    width: 100%;
+    height: auto;
+}
+
+.lesson-img-frame .lesson-gif-hidden {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99;
+}
+
+.lesson-img-frame:hover .lesson-gif-hidden {
+    display: inline;
+}
+
+.lesson-frame {
+    padding: 20px;
+}
+
+.lesson-name {
+    font-size: 28px;
+    color: rgb(197, 0, 0);
+    font-weight: 400;
+}
+
+.lesson-links {
+    text-align: right;
+    width: 100%;
+}
+
+.lesson-authors {
+    font-size: 20px;
+    color: #000;
+}
+
+.lesson-date {
+    font-size: 20px;
+    color: #000;
+}
+
+.resume-frame {
+    margin: 0 auto;
+    height: 100%;
+    width: 100%;
+}
+
+.section-title {
+    font-size: 32px;
+    color: rgb(197, 0, 0);
+    /* margin-left: 5%; */
+    margin: 0 auto;
+}
+
+hr {
+    border-color: rgb(197, 0, 0);
+    width: 90%;
+    /* margin-left: 0; */
+}
+
+/* Button / Link Styles */
+.go-button {
+    width: 50%;
+    border-radius: 5px;
+    padding: 5px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(144, 1, 1);
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+.go-button:hover {
+    background-color: rgb(184, 2, 2);
+}

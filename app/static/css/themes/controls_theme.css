@@ -1,0 +1,9 @@
+
+@font-face {
+    font-family: rubik;
+    src: url('../fonts/rubik/Rubik-VariableFont_wght.ttf')
+}
+
+body {
+    font-family: rubik;
+}
