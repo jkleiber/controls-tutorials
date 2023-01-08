@@ -50,11 +50,11 @@ body {
 }
 
 
-/* Projects page */
+/* Lessons */
 .lesson-center-container {
     display: flex;
     flex-direction: column;
-    height: 80%;
+    height: 100%;
     width: 100%;
 }
 
@@ -65,6 +65,17 @@ body {
     min-width: 200px;
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.lesson-scroller {
+    align-self: center;
+    margin: 0 auto;
+    width: 90%;
+    min-width: 200px;
+    display: grid;
+    /* flex-wrap: wrap; */
     align-items: center;
     justify-content: center;
 }
@@ -157,6 +168,7 @@ body {
     color: rgb(197, 0, 0);
     /* margin-left: 5%; */
     margin: 0 auto;
+    text-align: center;
 }
 
 hr {

@@ -39,63 +39,158 @@
         <div data-include="minor-header"></div>
 
         <div class="lesson-center-container">
+            <div class="lesson-scroller">
 
-            <div class="section-title">
-                Introduction
-                <hr>
-            </div>
+                <div class="section-title">
+                    Introduction
+                    <hr>
+                </div>
 
-            <p class="lesson-text">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis ultricies risus. Etiam fermentum elit
-                ut ligula pulvinar ultricies. Nullam egestas sollicitudin tempus. Nam ac interdum mi. Morbi nec purus
-                vel ligula malesuada sollicitudin. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-                posuere cubilia curae; Sed odio augue, rutrum sed imperdiet ut, ornare vitae mi. Fusce ex mi, pharetra
-                nec placerat vitae, pellentesque vel felis. Aenean efficitur vel risus nec pharetra. Pellentesque
-                hendrerit leo in dui sollicitudin auctor. Maecenas ac magna vitae ipsum faucibus interdum nec eleifend
-                nibh.
-            </p>
+                <p class="lesson-text">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis ultricies risus. Etiam fermentum
+                    elit
+                    ut ligula pulvinar ultricies. Nullam egestas sollicitudin tempus. Nam ac interdum mi. Morbi nec
+                    purus
+                    vel ligula malesuada sollicitudin. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
+                    posuere cubilia curae; Sed odio augue, rutrum sed imperdiet ut, ornare vitae mi. Fusce ex mi,
+                    pharetra
+                    nec placerat vitae, pellentesque vel felis. Aenean efficitur vel risus nec pharetra. Pellentesque
+                    hendrerit leo in dui sollicitudin auctor. Maecenas ac magna vitae ipsum faucibus interdum nec
+                    eleifend
+                    nibh.
+                </p>
 
-            <div class="section-title">
-                What is PID?
-                <hr>
-            </div>
+                <div class="section-title">
+                    What is PID?
+                    <hr>
+                </div>
 
-            <p class="lesson-text">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis ultricies risus. Etiam fermentum elit
-                ut ligula pulvinar ultricies. Nullam egestas sollicitudin tempus. Nam ac interdum mi. Morbi nec purus
-                vel ligula malesuada sollicitudin. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-                posuere cubilia curae; Sed odio augue, rutrum sed imperdiet ut, ornare vitae mi. Fusce ex mi, pharetra
-                nec placerat vitae, pellentesque vel felis. Aenean efficitur vel risus nec pharetra. Pellentesque
-                hendrerit leo in dui sollicitudin auctor. Maecenas ac magna vitae ipsum faucibus interdum nec eleifend
-                nibh.
-            </p>
+                <p class="lesson-text">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis ultricies risus. Etiam fermentum
+                    elit
+                    ut ligula pulvinar ultricies. Nullam egestas sollicitudin tempus. Nam ac interdum mi. Morbi nec
+                    purus
+                    vel ligula malesuada sollicitudin. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
+                    posuere cubilia curae; Sed odio augue, rutrum sed imperdiet ut, ornare vitae mi. Fusce ex mi,
+                    pharetra
+                    nec placerat vitae, pellentesque vel felis. Aenean efficitur vel risus nec pharetra. Pellentesque
+                    hendrerit leo in dui sollicitudin auctor. Maecenas ac magna vitae ipsum faucibus interdum nec
+                    eleifend
+                    nibh.
+                </p>
 
 
-            <!-- PID Control -->
-            <div class="example-block">
-                <!-- <div class="lesson-img-frame">
+                <!-- PID Control -->
+                <div class="example-block">
+                    <!-- <div class="lesson-img-frame">
                         <img src="/static/img/quadcopter-cad.png" class="lesson-gif"></img>
                     </div> -->
-                <div class="example-header">PID Control Demo</div>
-                <!-- <div class="lesson-authors">
+                    <div class="example-header">PID Control Demo</div>
+                    <!-- <div class="lesson-authors">
                             Justin Kleiber
                         </div> -->
-                <br>
-                <div class="example-frame">
+                    <br>
+                    <div class="example-frame">
+                        <div id="chart"></div>
 
-                    <div class="lesson-summary">
-                        P = Proportional
+                        <div class="lesson-summary">
+                            P = Proportional
 
-                        I = Integral
+                            I = Integral
 
-                        D = Derivative
+                            D = Derivative
+                        </div>
                     </div>
                 </div>
+
             </div>
-
-
         </div>
     </div>
+
+    <script>
+        var data = []
+        let X_AXIS_RANGE = 10000;
+        let TICKINTERVAL = 100;
+
+        var options = {
+            series: [{
+                data: data.slice()
+            }],
+            chart: {
+                id: 'realtime',
+                height: 350,
+                type: 'line',
+                animations: {
+                    enabled: true,
+                    easing: 'linear',
+                    dynamicAnimation: {
+                        speed: TICKINTERVAL
+                    }
+                },
+                toolbar: {
+                    show: false
+                },
+                zoom: {
+                    enabled: false
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            title: {
+                text: 'Dynamic Updating Chart',
+                align: 'left'
+            },
+            markers: {
+                size: 0
+            },
+            xaxis: {
+                type: 'numeric',
+                range: X_AXIS_RANGE
+            },
+            yaxis: {
+                max: 1
+            },
+            legend: {
+                show: false
+            },
+        };
+
+        let DATA_LENGTH = 20;
+
+
+        var chart = new ApexCharts(document.querySelector("#chart"), options);
+        chart.render();
+
+        var startTime = performance.now();
+
+
+        window.setInterval(function () {
+            var new_val = Math.random();
+            var currentTime = performance.now()
+            var elapsedTime = currentTime - startTime;
+
+            for (var i = 0; i < data.length - 100; i++) {
+                // IMPORTANT
+                // we reset the x and y of the data which is out of drawing area
+                // to prevent memory leaks
+                data[i].x = elapsedTime - X_AXIS_RANGE - TICKINTERVAL
+                data[i].y = 0
+            }
+
+            data.push({
+                x: elapsedTime,
+                y: new_val
+            });
+
+            chart.updateSeries([{
+                data: data
+            }])
+        }, TICKINTERVAL);
+    </script>
 </body>
 
 </html>
