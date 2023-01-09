@@ -93,6 +93,8 @@
                     <div class="example-frame">
                         <div id="chart"></div>
 
+                        <button onclick="run_p_sim()">Go!</button>
+
                         <div class="lesson-summary">
                             P = Proportional
 
@@ -109,14 +111,13 @@
     </div>
 
     <script>
-        var data = []
-        let X_AXIS_RANGE = 10000;
+        var data = [];
+        var t = 0;
+        let X_AXIS_RANGE = 10;
         let TICKINTERVAL = 100;
 
-        var options = {
-            series: [{
-                data: data.slice()
-            }],
+        var x_options = {
+            series: [],
             chart: {
                 id: 'realtime',
                 height: 350,
@@ -142,7 +143,7 @@
                 curve: 'smooth'
             },
             title: {
-                text: 'Dynamic Updating Chart',
+                text: 'System State',
                 align: 'left'
             },
             markers: {
@@ -150,47 +151,113 @@
             },
             xaxis: {
                 type: 'numeric',
-                range: X_AXIS_RANGE
+                min: 0,
+                max: 10
             },
             yaxis: {
                 max: 1
             },
             legend: {
-                show: false
+                show: true
+            },
+        };
+        var u_options = {
+            series: [],
+            chart: {
+                id: 'realtime',
+                height: 350,
+                type: 'line',
+                animations: {
+                    enabled: true,
+                    easing: 'linear',
+                    dynamicAnimation: {
+                        speed: TICKINTERVAL
+                    }
+                },
+                toolbar: {
+                    show: false
+                },
+                zoom: {
+                    enabled: false
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            title: {
+                text: 'Proportional Control',
+                align: 'left'
+            },
+            markers: {
+                size: 0
+            },
+            xaxis: {
+                type: 'numeric',
+                min: 0,
+                max: 10
+            },
+            yaxis: {
+                max: 1
+            },
+            legend: {
+                show: true
             },
         };
 
         let DATA_LENGTH = 20;
 
 
-        var chart = new ApexCharts(document.querySelector("#chart"), options);
-        chart.render();
+        var x_chart_1 = new ApexCharts(document.querySelector("#chart"), x_options);
+        var u_chart_1 = new ApexCharts(document.querySelector("#chart"), u_options);
+        x_chart_1.render();
+        u_chart_1.render();
 
         var startTime = performance.now();
 
-
-        window.setInterval(function () {
-            var new_val = Math.random();
-            var currentTime = performance.now()
-            var elapsedTime = currentTime - startTime;
-
-            for (var i = 0; i < data.length - 100; i++) {
-                // IMPORTANT
-                // we reset the x and y of the data which is out of drawing area
-                // to prevent memory leaks
-                data[i].x = elapsedTime - X_AXIS_RANGE - TICKINTERVAL
-                data[i].y = 0
+        function run_p_sim() {
+            var charts = {
+                x_chart: x_chart_1,
+                pid_chart: u_chart_1
             }
 
-            data.push({
-                x: elapsedTime,
-                y: new_val
-            });
+            var x0 = 0.5;
+            var setpoint = 0.0;
+            var Kp = 0.25;
+            var Ki = 0;
+            var Kd = 0;
+            var tf = 10;
+            var dt = 0.1;
 
-            chart.updateSeries([{
-                data: data
-            }])
-        }, TICKINTERVAL);
+            pid_control_sim(charts, x0, setpoint, Kp, Ki, Kd, tf, dt)
+        }
+
+
+        // window.setInterval(function () {
+        //     var new_val = Math.random();
+        //     t += TICKINTERVAL / 1000.0;
+
+        //     for (var i = 0; i < data.length - 105; i++) {
+        //         // IMPORTANT
+        //         // we reset the x and y of the data which is out of drawing area
+        //         // to prevent memory leaks
+        //         data[i].x = t - X_AXIS_RANGE - TICKINTERVAL
+        //         data[i].y = 0
+        //     }
+
+        //     console.log(t)
+
+        //     data.push({
+        //         x: t,
+        //         y: new_val
+        //     });
+
+        //     chart.updateSeries([{
+        //         data: data
+        //     }])
+        // }, TICKINTERVAL);
     </script>
 </body>
 
