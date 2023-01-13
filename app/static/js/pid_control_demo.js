@@ -21,14 +21,164 @@ function cart_pole(x, u) {
     return 0;
 }
 
-const pid_control_sim = async(charts, x0, setpoint, Kp, Ki, Kd, tf, dt) => {
-    var N = Math.floor(tf / dt);
-    var integrator = 0;
-    var x_t = x0;
-    var t = 0;
-    var last_error = 0;
+function pid_chart_generator(x_id, u_id, speed) {
+    var x_options = {
+        series: [],
+        chart: {
+            id: 'realtime',
+            height: 350,
+            type: 'line',
+            animations: {
+                enabled: true,
+                easing: 'linear',
+                dynamicAnimation: {
+                    speed: speed
+                }
+            },
+            toolbar: {
+                show: false
+            },
+            zoom: {
+                enabled: false
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        title: {
+            text: 'System State',
+            align: 'left'
+        },
+        markers: {
+            size: 0
+        },
+        xaxis: {
+            type: 'numeric',
+            min: 0,
+            max: 10
+        },
+        yaxis: {
+            max: 10,
+            min: -10
+        },
+        legend: {
+            show: true
+        },
+    };
+    var u_options = {
+        series: [],
+        chart: {
+            id: 'realtime',
+            height: 350,
+            type: 'line',
+            animations: {
+                enabled: true,
+                easing: 'linear',
+                dynamicAnimation: {
+                    speed: speed
+                }
+            },
+            toolbar: {
+                show: false
+            },
+            zoom: {
+                enabled: false
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        title: {
+            text: 'Proportional Control',
+            align: 'left'
+        },
+        markers: {
+            size: 0
+        },
+        xaxis: {
+            type: 'numeric',
+            min: 0,
+            max: 10
+        },
+        yaxis: {
+            max: 10,
+            min: -10
+        },
+        legend: {
+            show: true
+        },
+    };
 
-    pid_data = [
+
+    var x_chart_1 = new ApexCharts(document.querySelector(x_id), x_options);
+    var u_chart_1 = new ApexCharts(document.querySelector(u_id), u_options);
+
+    return [x_chart_1, u_chart_1];
+}
+
+const pid_control_sim = async(x_data, pid_data, sim_data) => {
+    // Compute error
+    var error = sim_data.setpoint - sim_data.x;
+
+    // Proportional control
+    var P = sim_data.Kp * error;
+
+    // Integral control
+    sim_data.integrator += sim_data.Ki * error * sim_data.dt;
+    var I = sim_data.integrator;
+
+    // Derivative control
+    var slope = (error - sim_data.prev_error) / sim_data.dt;
+    var D = sim_data.Kd * slope;
+
+    // Control
+    var u = P + I + D;
+
+    // Update dynamics
+    var xdot = cart_pole(sim_data.x, u);
+
+    // Integrate
+    sim_data.x += xdot * sim_data.dt;
+
+    // Update time
+    sim_data.t += sim_data.dt;
+
+    // Update derivative tracker
+    sim_data.prev_error = error;
+
+    // Chart Data
+    var t = sim_data.t;
+    x_data[0].data.push({
+        x: t,
+        y: sim_data.x
+    });
+
+    pid_data[0].data.push({
+        x: t,
+        y: u
+    });
+    pid_data[1].data.push({
+        x: t,
+        y: P
+    });
+    pid_data[2].data.push({
+        x: t,
+        y: I
+    });
+    pid_data[3].data.push({
+        x: t,
+        y: D
+    });
+}
+
+function example_reset(x, u) {
+    u.series = [
         {
             name: "PID Control",
             data: []
@@ -46,69 +196,10 @@ const pid_control_sim = async(charts, x0, setpoint, Kp, Ki, Kd, tf, dt) => {
             data: []
         }
     ];
-    x_data = [{
+
+    x.series = [{
         name: "State",
         data: []
     }];
-
-    for (var i = 0; i < N; i++) {
-        var error = setpoint - x_t;
-
-        // Proportional control
-        var P = Kp * error;
-
-        // Integral control
-        integrator += Ki * error * dt;
-        var I = integrator;
-
-        // Derivative control
-        var slope = (error - last_error) / dt;
-        var D = Kd * slope;
-
-        // Control
-        var u = P + I + D;
-
-        // Update dynamics
-        var xdot = cart_pole(x_t, u);
-
-        // Integrate
-        x_t += xdot * dt;
-
-        // Update time
-        t += dt;
-
-        // Chart Data
-        x_data[0].data.push({
-            x: t,
-            y: x_t
-        });
-
-        pid_data[0].data.push({
-            x: t,
-            y: u
-        });
-        pid_data[1].data.push({
-            x: t,
-            y: P
-        });
-        pid_data[2].data.push({
-            x: t,
-            y: I
-        });
-        pid_data[3].data.push({
-            x: t,
-            y: D
-        });
-
-        // Update charts
-        charts.pid_chart.updateSeries(pid_data);
-        charts.x_chart.updateSeries(x_data);
-
-        // Add time delay
-        var dt_in_ms = Math.floor(dt * 1000);
-        await delay(dt_in_ms);
-    }
-
-
 }
 

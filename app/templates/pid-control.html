@@ -91,7 +91,8 @@
                         </div> -->
                     <br>
                     <div class="example-frame">
-                        <div id="chart"></div>
+                        <div id="x-chart-p-control"></div>
+                        <div id="u-chart-p-control"></div>
 
                         <button onclick="run_p_sim()">Go!</button>
 
@@ -111,153 +112,88 @@
     </div>
 
     <script>
-        var data = [];
-        var t = 0;
+        // Constants
         let X_AXIS_RANGE = 10;
-        let TICKINTERVAL = 100;
-
-        var x_options = {
-            series: [],
-            chart: {
-                id: 'realtime',
-                height: 350,
-                type: 'line',
-                animations: {
-                    enabled: true,
-                    easing: 'linear',
-                    dynamicAnimation: {
-                        speed: TICKINTERVAL
-                    }
-                },
-                toolbar: {
-                    show: false
-                },
-                zoom: {
-                    enabled: false
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: 'smooth'
-            },
-            title: {
-                text: 'System State',
-                align: 'left'
-            },
-            markers: {
-                size: 0
-            },
-            xaxis: {
-                type: 'numeric',
-                min: 0,
-                max: 10
-            },
-            yaxis: {
-                max: 1
-            },
-            legend: {
-                show: true
-            },
-        };
-        var u_options = {
-            series: [],
-            chart: {
-                id: 'realtime',
-                height: 350,
-                type: 'line',
-                animations: {
-                    enabled: true,
-                    easing: 'linear',
-                    dynamicAnimation: {
-                        speed: TICKINTERVAL
-                    }
-                },
-                toolbar: {
-                    show: false
-                },
-                zoom: {
-                    enabled: false
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: 'smooth'
-            },
-            title: {
-                text: 'Proportional Control',
-                align: 'left'
-            },
-            markers: {
-                size: 0
-            },
-            xaxis: {
-                type: 'numeric',
-                min: 0,
-                max: 10
-            },
-            yaxis: {
-                max: 1
-            },
-            legend: {
-                show: true
-            },
-        };
-
+        let TIME_INTERVAL_MS = 250;
         let DATA_LENGTH = 20;
 
-
-        var x_chart_1 = new ApexCharts(document.querySelector("#chart"), x_options);
-        var u_chart_1 = new ApexCharts(document.querySelector("#chart"), u_options);
+        // P-control example
+        p_charts = pid_chart_generator("#x-chart-p-control", "#u-chart-p-control", TIME_INTERVAL_MS);
+        x_chart_1 = p_charts[0];
+        u_chart_1 = p_charts[1];
         x_chart_1.render();
         u_chart_1.render();
 
-        var startTime = performance.now();
+        var p_control_run = false;
+        var p_control_reset = false;
+
+        var p_charts_dict = {
+            x_chart: x_chart_1,
+            pid_chart: u_chart_1
+        };
+
+        // Example constants
+        var p_x0 = 4;   // Initial condition
+        var p_xt = 0.0; // Setpoint
+        var p_Kp = 0.5; // Proportional gain
+        var p_tf = 10;  // final sim time
+        var p_dt = TIME_INTERVAL_MS / 1000;
+
+        // Example data
+        var p_sim_data = {
+            t: 0,
+            x: p_x0,
+            setpoint: p_xt,
+            Kp: 1,
+            Ki: 0,
+            Kd: 0,
+            dt: p_dt,
+            prev_error: 0,
+            integrator: 0
+        };
+        var p_x_data = {
+            series: []
+        };
+        var p_pid_data = {
+            series: []
+        };
+        // reset to initialize
+        example_reset(p_x_data, p_pid_data);
+        console.log(p_x_data)
 
         function run_p_sim() {
-            var charts = {
-                x_chart: x_chart_1,
-                pid_chart: u_chart_1
+            if (p_control_run) {
+                p_control_reset = true;
             }
-
-            var x0 = 0.5;
-            var setpoint = 0.0;
-            var Kp = 0.25;
-            var Ki = 0;
-            var Kd = 0;
-            var tf = 10;
-            var dt = 0.1;
-
-            pid_control_sim(charts, x0, setpoint, Kp, Ki, Kd, tf, dt)
+            p_control_run = true;
         }
 
+        window.setInterval(function () {
+            // If the P-control needs to be reset, reset it.
+            if (p_control_reset) {
+                example_reset(p_x_data, p_pid_data);
+                p_sim_data.prev_error = 0;
+                p_sim_data.integrator = 0;
+                p_sim_data.t = 0;
+                p_control_reset = false;
+            }
 
-        // window.setInterval(function () {
-        //     var new_val = Math.random();
-        //     t += TICKINTERVAL / 1000.0;
+            // If P-control example is running, manage it.
+            if (p_control_run) {
+                // Run the simulation
+                pid_control_sim(p_x_data.series, p_pid_data.series, p_sim_data);
 
-        //     for (var i = 0; i < data.length - 105; i++) {
-        //         // IMPORTANT
-        //         // we reset the x and y of the data which is out of drawing area
-        //         // to prevent memory leaks
-        //         data[i].x = t - X_AXIS_RANGE - TICKINTERVAL
-        //         data[i].y = 0
-        //     }
+                // Update charts
+                p_charts_dict.pid_chart.updateSeries(p_pid_data.series);
+                p_charts_dict.x_chart.updateSeries(p_x_data.series);
 
-        //     console.log(t)
+                if (p_sim_data.t >= p_tf) {
+                    p_control_run = false;
+                }
+            }
 
-        //     data.push({
-        //         x: t,
-        //         y: new_val
-        //     });
 
-        //     chart.updateSeries([{
-        //         data: data
-        //     }])
-        // }, TICKINTERVAL);
+        }, TIME_INTERVAL_MS);
     </script>
 </body>
 
