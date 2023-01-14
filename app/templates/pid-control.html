@@ -30,6 +30,10 @@
     <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <!-- PID Control demo JS -->
     <script src="static/js/pid_control_demo.js"></script>
 </head>
@@ -47,17 +51,19 @@
                 </div>
 
                 <p class="lesson-text">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis ultricies risus. Etiam fermentum
-                    elit
-                    ut ligula pulvinar ultricies. Nullam egestas sollicitudin tempus. Nam ac interdum mi. Morbi nec
-                    purus
-                    vel ligula malesuada sollicitudin. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-                    posuere cubilia curae; Sed odio augue, rutrum sed imperdiet ut, ornare vitae mi. Fusce ex mi,
-                    pharetra
-                    nec placerat vitae, pellentesque vel felis. Aenean efficitur vel risus nec pharetra. Pellentesque
-                    hendrerit leo in dui sollicitudin auctor. Maecenas ac magna vitae ipsum faucibus interdum nec
-                    eleifend
-                    nibh.
+                    How would you control a robot?
+
+                    There are a lot of ways to answer this question, and this lesson will explain one of them: PID
+                    control.
+                </p>
+
+                <div class="section-title">
+                    Simple Control Strategies
+                    <hr>
+                </div>
+
+                <p class="lesson-text">
+                    Bang-bang control
                 </p>
 
                 <div class="section-title">
@@ -77,6 +83,10 @@
                     hendrerit leo in dui sollicitudin auctor. Maecenas ac magna vitae ipsum faucibus interdum nec
                     eleifend
                     nibh.
+                </p>
+                <p class="lesson-text">
+                    When \(a \ne 0\), there are two solutions to \(ax^2 + bx + c = 0\) and they are
+                    \[x = {-b \pm \sqrt{b^2-4ac} \over 2a}.\]
                 </p>
 
 

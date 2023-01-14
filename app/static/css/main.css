@@ -180,7 +180,7 @@ hr {
 /* Lesson Text */
 .lesson-text {
     width: 80%;
-    display: flex;
+    display: block;
     margin: 0 auto;
     padding: 15px;
 }
