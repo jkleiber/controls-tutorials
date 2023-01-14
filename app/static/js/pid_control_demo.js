@@ -31,6 +31,13 @@ let auv_img = new Image();
 auv_img.onload = function(){}
 auv_img.src = "static/img/mid-submarine.png";
 
+let bubble_img = new Image();
+bubble_img.onload = function(){}
+bubble_img.src = "static/img/bubble.png";
+
+var active_bubbles = 0;
+var bubble_x = [];
+
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
@@ -260,13 +267,50 @@ function example_reset(x, u) {
     }];
 }
 
+function getBubbleInit(ctx_width, ctx_height) {
+    var init_x = 200 * Math.random() + ctx_width;
+    var init_y = ctx_height * Math.random();
+    var init_vx = Math.random() * 10;
+    var init_vy = Math.random() * 5 - 2.5;
+
+    return {x: init_x, y: init_y, vx: init_vx, vy: init_vy};
+}
+
+function initBubbles(num_bubbles, ctx_width, ctx_height) {
+    for (var i = 0; i < num_bubbles; i++) {
+        var data = getBubbleInit(ctx_width, ctx_height);
+        bubble_x.push(data);
+    }
+}
+
 function drawAUV(canvas, ctx, pitch) {
     // Prepare the context
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // ctx.imageSmoothingEnabled = false;
-
+    
+    // Draw the ocean
     drawBackground(ctx, canvas.width, canvas.height);
+
+    // Draw bubbles
+    drawBubbles();
+
+    // draw the AUV
     drawRotatedImage(ctx, auv_img, 50, 50, pitch);
+
+    
+}
+
+function drawBubbles() {
+    for (var i = 0; i < bubble_x.length; i++) {
+        bubble_x[i].x -= bubble_x[i].vx;
+        bubble_x[i].y -= bubble_x[i].vy;
+
+        if (bubble_x[i].x < -bubble_img.width || bubble_x[i].y < -bubble_img.height) {
+            var data = getBubbleInit(canvas.width, canvas.height);
+            bubble_x[i] = data;
+        } else {
+            ctx.drawImage(bubble_img, bubble_x[i].x, bubble_x[i].y);
+        }
+    }
 }
 
 function drawBackground(ctx, width, height) {

@@ -51,19 +51,79 @@
                 </div>
 
                 <p class="lesson-text">
-                    How would you control a robot?
+                    How would you control a robot?<br><br>
 
-                    There are a lot of ways to answer this question, and this lesson will explain one of them: PID
-                    control.
+                    In this tutorial, we will explore one possible way to answer this question. First, we will review
+                    some simple physics of dynamic systems.
+
+                    Then, we will try out a simple control strategy to stabilize a robot. We will discuss the pros and
+                    cons of this simple control system, and then introduce PID control.
+
+                    Finally, we will cover how PID controllers are implemented in code, and how to tune them.
                 </p>
 
                 <div class="section-title">
-                    Simple Control Strategies
+                    Basic Systems Theory
                     <hr>
                 </div>
 
                 <p class="lesson-text">
-                    Bang-bang control
+                    This will eventually be its own tutorial, since the topic is fairly complex.
+                    First, we need to know what a system is
+                </p>
+                <div class="definition-block">
+                    <div class="definition-header">Definition</div>
+                    <div class="definition-frame">
+                        <b>System - </b> A physical process with inputs and outputs <br><br>
+                        <img src="static/img/system.png" class="definition-img"> <br><br>
+                        <i>Examples: </i> A radio, computer, thermostat, and water faucet are all examples of systems.
+                    </div>
+                </div>
+                <p class="lesson-text">
+                    So, when we are programming robots we can treat them as systems with inputs and outputs. Robots have
+                    subsystems (systems that contribute to the Robot system as a whole), and these subsystems have
+                    inputs and outputs as well.<br><br>
+                    There is a type of system that often gets brought up when talking about controlling systems: the
+                    dynamical system.
+                </p>
+                <div class="definition-block">
+                    <div class="definition-header">Definition</div>
+                    <div class="definition-frame">
+                        <b>Dynamical System - </b>A system whose behavior can be mathematically modeled (typically using
+                        the laws of physics).<br><br>
+
+                        A general mathematical form for a dynamical system is the differential equation:
+                        \[\dot x = f(x, u, t)\]
+
+                        <i>Examples: </i> Cars, airplanes, boats, and robots are examples of dynamical systems
+                    </div>
+                </div>
+                <p class="lesson-text">
+                    We won't cover how to use differential equations or model these systems in this tutorial, but it's
+                    important to know that these systems exist. Most importantly, we want to control these dynamical
+                    systems.
+                </p>
+
+
+                <div class="section-title">
+                    Bang-Bang Control
+                    <hr>
+                </div>
+
+                <p class="lesson-text">
+                    Bang-bang control is a control strategy where the controller applies maximum control if the system's
+                    state is not inside a range of acceptable values, and turns off when it is inside the acceptable
+                    range.<br><br>
+
+                    The typical example of bang-bang control is the thermostat, which turns on if your house gets too
+                    warm or too cold depending on the heat/cool setting. If it is set to heat your house in the winter,
+                    then it turns on the heater when the house drops below a set temperature. Likewise in the summer the
+                    thermostat turns on the A/C when the temperature inside gets too warm. Otherwise it is turned off
+                    until the house needs to be heated or cooled again.<br><br>
+
+                    While this works well for your house, imagine using this to control a robot, or another system whose
+                    state changes fast. The controller would be constantly turning on and off, and the system may
+                    oscillate aggressively.
                 </p>
 
                 <div class="section-title">
@@ -72,21 +132,21 @@
                 </div>
 
                 <p class="lesson-text">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis ultricies risus. Etiam fermentum
-                    elit
-                    ut ligula pulvinar ultricies. Nullam egestas sollicitudin tempus. Nam ac interdum mi. Morbi nec
-                    purus
-                    vel ligula malesuada sollicitudin. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices
-                    posuere cubilia curae; Sed odio augue, rutrum sed imperdiet ut, ornare vitae mi. Fusce ex mi,
-                    pharetra
-                    nec placerat vitae, pellentesque vel felis. Aenean efficitur vel risus nec pharetra. Pellentesque
-                    hendrerit leo in dui sollicitudin auctor. Maecenas ac magna vitae ipsum faucibus interdum nec
-                    eleifend
-                    nibh.
+                    PID stands for Proportional Integral Derivative control.
                 </p>
+
+                <div class="section-title">
+                    Tuning PID Controllers
+                    <hr>
+                </div>
+
                 <p class="lesson-text">
-                    When \(a \ne 0\), there are two solutions to \(ax^2 + bx + c = 0\) and they are
-                    \[x = {-b \pm \sqrt{b^2-4ac} \over 2a}.\]
+                    There are three knobs you can turn to adjust your PID controller: the proportional gain \(K_p\),
+                    integral gain \(K_i\), and derivative gain \(K_d\).<br><br>
+
+
+                    Test below to see how adjusting the PID gains results in different trajectories for our underwater
+                    vehicle system.
                 </p>
 
 
@@ -115,15 +175,15 @@
                                 <div class="example-input-panel">
 
                                     <p class="example-user-input-container">
-                                        <label for="kp-input" class="example-user-input">Kp:</label>
+                                        <label for="kp-input" class="example-user-input">\(K_p\)</label>
                                         <input type="number" id="kp-input" class="example-user-input" value="1.5">
                                     </p>
                                     <p class="example-user-input-container">
-                                        <label for="ki-input" class="example-user-input">Ki:</label>
+                                        <label for="ki-input" class="example-user-input">\(K_i\)</label>
                                         <input type="number" id="ki-input" class="example-user-input" value="0.001">
                                     </p>
                                     <p class="example-user-input-container">
-                                        <label for="kd-input" class="example-user-input">Kd:</label>
+                                        <label for="kd-input" class="example-user-input">\(K_d\)</label>
                                         <input type="number" id="kd-input" class="example-user-input" value="0.5">
                                     </p>
 
@@ -153,10 +213,12 @@
     <script>
         // Simulation Constants
         let TIME_INTERVAL_MS = 100;
+        let NUM_BUBBLES = 7;
 
         // Canvas
         var canvas = document.getElementById("draw-sim-pid-control-canvas");
         var ctx = canvas.getContext("2d");
+        initBubbles(NUM_BUBBLES, canvas.width, canvas.height)
 
         // PID control example constants
         var pid_x0 = [0, 0];   // Initial condition
