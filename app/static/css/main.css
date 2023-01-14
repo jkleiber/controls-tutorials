@@ -187,6 +187,11 @@ hr {
 
 
 /* Example Entries */
+.example-summary {
+    width: 100%;
+    padding-bottom: 20px;
+}
+
 .example-block {
     border-radius: 5px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -205,6 +210,45 @@ hr {
     padding: 20px;
     font-weight: 400;
     font-size: 24px;
+}
+
+.wrapper-2x2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    grid-auto-rows: 25%;
+}
+
+
+.realtime-example-chart {
+    display: flex;
+    /* width: 50%; */
+}
+
+.example-drawing {
+    width: 100%;
+}
+
+.example-inputs {
+    width: 100%;
+}
+
+.example-input-panel {
+    display: table;
+    border-spacing: 10px;
+}
+
+p.example-user-input-container {
+    display: table-row;
+    padding: 10px;
+}
+
+label.example-user-input {
+    display: table-cell;
+}
+
+input.example-user-input {
+    display: table-cell;
 }
 
 

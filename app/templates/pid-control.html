@@ -89,20 +89,49 @@
                     <!-- <div class="lesson-authors">
                             Justin Kleiber
                         </div> -->
-                    <br>
+
                     <div class="example-frame">
-                        <div id="x-chart-p-control"></div>
-                        <div id="u-chart-p-control"></div>
-
-                        <button onclick="run_p_sim()">Go!</button>
-
-                        <div class="lesson-summary">
+                        <div class="example-summary">
                             P = Proportional
 
                             I = Integral
 
                             D = Derivative
                         </div>
+
+                        <div class="wrapper-2x2">
+                            <div id="pid-control-inputs" class="example-inputs">
+                                <b>PID Gains</b>
+                                <div class="example-input-panel">
+
+                                    <p class="example-user-input-container">
+                                        <label for="kp-input" class="example-user-input">Kp:</label>
+                                        <input type="number" id="kp-input" class="example-user-input" value="1.5">
+                                    </p>
+                                    <p class="example-user-input-container">
+                                        <label for="ki-input" class="example-user-input">Ki:</label>
+                                        <input type="number" id="ki-input" class="example-user-input" value="0.001">
+                                    </p>
+                                    <p class="example-user-input-container">
+                                        <label for="kd-input" class="example-user-input">Kd:</label>
+                                        <input type="number" id="kd-input" class="example-user-input" value="0.5">
+                                    </p>
+
+                                    <button onclick="run_pid_sim()">Go!</button>
+
+                                </div>
+                            </div>
+                            <div id="draw-sim-pid-control-container">
+                                <b>System</b>
+                                <canvas id="draw-sim-pid-control-canvas" class="example-drawing"></canvas>
+                            </div>
+                            <div id="x-chart-pid-control" class="realtime-example-chart"></div>
+                            <div id="u-chart-pid-control" class="realtime-example-chart"></div>
+                        </div>
+
+
+
+
                     </div>
                 </div>
 
@@ -112,85 +141,115 @@
     </div>
 
     <script>
-        // Constants
-        let X_AXIS_RANGE = 10;
-        let TIME_INTERVAL_MS = 250;
-        let DATA_LENGTH = 20;
+        // Simulation Constants
+        let TIME_INTERVAL_MS = 100;
 
-        // P-control example
-        p_charts = pid_chart_generator("#x-chart-p-control", "#u-chart-p-control", TIME_INTERVAL_MS);
-        x_chart_1 = p_charts[0];
-        u_chart_1 = p_charts[1];
+        // Canvas
+        var canvas = document.getElementById("draw-sim-pid-control-canvas");
+        var ctx = canvas.getContext("2d");
+
+        // PID control example constants
+        var pid_x0 = [0, 0];   // Initial condition
+        var pid_xt = 0.0; // Setpoint
+        var pid_Kp = 0.5; // Proportional gain
+        var pid_tf = 5;  // final sim time
+        var pid_dt = TIME_INTERVAL_MS / 1000;
+        var MIN_X0 = 25;
+        var MAX_X0 = 45;
+
+        // PID control example charts
+        pid_charts = pid_chart_generator("#x-chart-pid-control", "#u-chart-pid-control", pid_tf, TIME_INTERVAL_MS);
+        x_chart_1 = pid_charts[0];
+        u_chart_1 = pid_charts[1];
         x_chart_1.render();
         u_chart_1.render();
 
-        var p_control_run = false;
-        var p_control_reset = false;
+        var pid_control_run = false;
+        var pid_control_reset = false;
+        var first_run = true;
 
-        var p_charts_dict = {
+        var pid_charts_dict = {
             x_chart: x_chart_1,
             pid_chart: u_chart_1
         };
 
-        // Example constants
-        var p_x0 = 4;   // Initial condition
-        var p_xt = 0.0; // Setpoint
-        var p_Kp = 0.5; // Proportional gain
-        var p_tf = 10;  // final sim time
-        var p_dt = TIME_INTERVAL_MS / 1000;
-
         // Example data
-        var p_sim_data = {
+        var pid_sim_data = {
             t: 0,
-            x: p_x0,
-            setpoint: p_xt,
+            x: pid_x0,
+            setpoint: pid_xt,
             Kp: 1,
             Ki: 0,
             Kd: 0,
-            dt: p_dt,
+            dt: pid_dt,
             prev_error: 0,
             integrator: 0
         };
-        var p_x_data = {
+        var pid_x_data = {
             series: []
         };
-        var p_pid_data = {
+        var pid_pid_data = {
             series: []
         };
         // reset to initialize
-        example_reset(p_x_data, p_pid_data);
-        console.log(p_x_data)
+        example_reset(pid_x_data, pid_pid_data);
+        console.log(pid_x_data)
 
-        function run_p_sim() {
-            if (p_control_run) {
-                p_control_reset = true;
+        function run_pid_sim() {
+            // Set state to running
+            pid_control_run = true;
+
+            // Reset the views.
+            example_reset(pid_x_data, pid_pid_data);
+            pid_sim_data.prev_error = 0;
+            pid_sim_data.integrator = 0;
+            pid_sim_data.t = 0;
+
+            // Get user input.
+            pid_sim_data.Kp = parseFloat(document.getElementById("kp-input").value);
+            pid_sim_data.Ki = parseFloat(document.getElementById("ki-input").value);
+            pid_sim_data.Kd = parseFloat(document.getElementById("kd-input").value);
+
+            // Come up with new initial condition.
+            new_x0(pid_sim_data);
+        }
+
+        function new_x0(sim_data) {
+            // Generate random initial condition.
+            var x0_range = MAX_X0 - MIN_X0;
+            var x0_center = MAX_X0 - (x0_range / 2);
+            var x0 = (Math.random() * x0_range) + (x0_center - (x0_range / 2));
+
+            if (Math.random() > 0.5) {
+                x0 = -1 * x0;
             }
-            p_control_run = true;
+
+            sim_data.x = [x0, 0];
         }
 
         window.setInterval(function () {
-            // If the P-control needs to be reset, reset it.
-            if (p_control_reset) {
-                example_reset(p_x_data, p_pid_data);
-                p_sim_data.prev_error = 0;
-                p_sim_data.integrator = 0;
-                p_sim_data.t = 0;
-                p_control_reset = false;
+            // If this is the first run, draw the AUV to initialize the scene.
+            if (first_run) {
+                drawAUV(canvas, ctx, pid_sim_data.x[0])
             }
 
-            // If P-control example is running, manage it.
-            if (p_control_run) {
+            // If PID control example is running, manage it.
+            if (pid_control_run) {
                 // Run the simulation
-                pid_control_sim(p_x_data.series, p_pid_data.series, p_sim_data);
+                pid_control_sim(pid_x_data.series, pid_pid_data.series, pid_sim_data);
+
+                // Draw the example
+                drawAUV(canvas, ctx, pid_sim_data.x[0])
 
                 // Update charts
-                p_charts_dict.pid_chart.updateSeries(p_pid_data.series);
-                p_charts_dict.x_chart.updateSeries(p_x_data.series);
+                pid_charts_dict.pid_chart.updateSeries(pid_pid_data.series);
+                pid_charts_dict.x_chart.updateSeries(pid_x_data.series);
 
-                if (p_sim_data.t >= p_tf) {
-                    p_control_run = false;
+                if (pid_sim_data.t > pid_tf) {
+                    pid_control_run = false;
                 }
             }
+
 
 
         }, TIME_INTERVAL_MS);

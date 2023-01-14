@@ -1,5 +1,5 @@
 
-# controls-tutorials
+# robotics-tutorials
 
-A website for controls tutorials. 
+A website for robotics tutorials. 
 
