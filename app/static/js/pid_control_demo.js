@@ -29,7 +29,7 @@ function loadImage(url) {
 
 let auv_img = new Image();
 auv_img.onload = function(){}
-auv_img.src = "static/img/submarine.png";
+auv_img.src = "static/img/mid-submarine.png";
 
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -261,7 +261,10 @@ function example_reset(x, u) {
 }
 
 function drawAUV(canvas, ctx, pitch) {
+    // Prepare the context
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ctx.imageSmoothingEnabled = false;
+
     drawBackground(ctx, canvas.width, canvas.height);
     drawRotatedImage(ctx, auv_img, 50, 50, pitch);
 }
