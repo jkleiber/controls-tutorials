@@ -17,9 +17,9 @@ document.write(
 
 // System parameters
 var sys_params = {
-    a: -2,
-    b: -4,
-    c: 0.3
+    a: 1,
+    b: -0.2,
+    c: 2
 };
 
 // Resources
@@ -233,6 +233,59 @@ const pid_control_sim = async(x_data, pid_data, sim_data) => {
     });
 }
 
+const bb_control_sim = async(x_data, bb_data, sim_data) => {
+    // Current time
+    var t = sim_data.t;
+
+    // Timestep
+    var dt = sim_data.dt;
+
+    // Compute error on position
+    var error = sim_data.setpoint - sim_data.x[0];
+
+    // Bang-Bang control
+    var u = 0.0;
+    var thresh = sim_data.thresh;
+    if (Math.abs(error) > thresh) {
+        u = sim_data.power;
+        if (error < 0) {
+            u *= -1.0;
+        }
+    }
+
+    // Update dynamics
+    var xdot = second_order_sys(sim_data.x, u, sys_params);
+
+    console.log("u: " + u + " xdot: " + xdot)
+
+    // Integrate
+    sim_data.x[0] += xdot[0] * dt;
+    sim_data.x[1] += xdot[1] * dt;
+
+    // Update time
+    sim_data.t += dt;
+
+    // Update position chart
+    x_data[0].data.push({
+        x: t,
+        y: sim_data.x[0]
+    });
+    x_data[1].data.push({
+        x: t,
+        y: sim_data.x[1]
+    });
+    x_data[2].data.push({
+        x: t,
+        y: error
+    });
+    
+    // Update control chart
+    bb_data[0].data.push({
+        x: t,
+        y: u
+    });
+}
+
 function example_reset(x, u) {
     u.series = [
         {
@@ -249,6 +302,28 @@ function example_reset(x, u) {
         },
         {
             name: "D",
+            data: []
+        }
+    ];
+
+    x.series = [{
+        name: "Position",
+        data: []
+    },
+    {
+        name: "Velocity",
+        data: []
+    },
+    {
+        name: "Error",
+        data: []
+    }];
+}
+
+function bb_example_reset(x, u) {
+    u.series = [
+        {
+            name: "Control",
             data: []
         }
     ];
@@ -291,15 +366,13 @@ function drawAUV(canvas, ctx, pitch) {
     drawBackground(ctx, canvas.width, canvas.height);
 
     // Draw bubbles
-    drawBubbles();
+    drawBubbles(canvas, ctx);
 
     // draw the AUV
     drawRotatedImage(ctx, auv_img, 50, 50, pitch);
-
-    
 }
 
-function drawBubbles() {
+function drawBubbles(canvas, ctx) {
     for (var i = 0; i < bubble_x.length; i++) {
         bubble_x[i].x -= bubble_x[i].vx;
         bubble_x[i].y -= bubble_x[i].vy;

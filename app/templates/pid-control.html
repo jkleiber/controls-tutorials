@@ -126,6 +126,55 @@
                     oscillate aggressively.
                 </p>
 
+                <!-- PID Control -->
+                <div class="example-block">
+                    <!-- <div class="lesson-img-frame">
+                        <img src="/static/img/quadcopter-cad.png" class="lesson-gif"></img>
+                    </div> -->
+                    <div class="example-header">Bang-Bang Control Demo</div>
+                    <!-- <div class="lesson-authors">
+                            Justin Kleiber
+                        </div> -->
+
+                    <div class="example-frame">
+                        <div class="example-summary">
+
+                        </div>
+
+                        <div class="wrapper-2x2">
+                            <div id="bb-control-inputs" class="example-inputs">
+                                <b>PID Gains</b>
+                                <div class="example-input-panel">
+
+                                    <p class="example-user-input-container">
+                                        <label for="bb-power-input" class="example-user-input">Power</label>
+                                        <input type="number" id="bb-power-input" class="example-user-input" value="0.0">
+                                    </p>
+                                    <p class="example-user-input-container">
+                                        <label for="thresh-input" class="example-user-input">Error Threshold
+                                            (deg)</label>
+                                        <input type="number" id="thresh-input" class="example-user-input" value="0.0">
+                                    </p>
+
+                                    <button onclick="run_bb_sim()">Go!</button>
+
+                                </div>
+                            </div>
+                            <div id="draw-sim-bb-control-container">
+                                <b>System</b>
+                                <canvas id="draw-sim-bb-control-canvas" class="example-drawing"></canvas>
+                            </div>
+                            <div id="x-chart-bb-control" class="realtime-example-chart"></div>
+                            <div id="u-chart-bb-control" class="realtime-example-chart"></div>
+                        </div>
+
+
+
+
+                    </div>
+                </div>
+
+
                 <div class="section-title">
                     What is PID?
                     <hr>
@@ -176,15 +225,15 @@
 
                                     <p class="example-user-input-container">
                                         <label for="kp-input" class="example-user-input">\(K_p\)</label>
-                                        <input type="number" id="kp-input" class="example-user-input" value="1.5">
+                                        <input type="number" id="kp-input" class="example-user-input" value="0.0">
                                     </p>
                                     <p class="example-user-input-container">
                                         <label for="ki-input" class="example-user-input">\(K_i\)</label>
-                                        <input type="number" id="ki-input" class="example-user-input" value="0.001">
+                                        <input type="number" id="ki-input" class="example-user-input" value="0.0">
                                     </p>
                                     <p class="example-user-input-container">
                                         <label for="kd-input" class="example-user-input">\(K_d\)</label>
-                                        <input type="number" id="kd-input" class="example-user-input" value="0.5">
+                                        <input type="number" id="kd-input" class="example-user-input" value="0.0">
                                     </p>
 
                                     <button onclick="run_pid_sim()">Go!</button>
@@ -214,8 +263,16 @@
         // Simulation Constants
         let TIME_INTERVAL_MS = 100;
         let NUM_BUBBLES = 7;
+        let SIM_TF = 5; // final sim time
+        let SIM_DT = TIME_INTERVAL_MS / 1000;
+        let MIN_X0 = 25;
+        let MAX_X0 = 45;
 
-        // Canvas
+        /**
+         * PID EXAMPLE
+         */
+
+        // PID Canvas
         var canvas = document.getElementById("draw-sim-pid-control-canvas");
         var ctx = canvas.getContext("2d");
         initBubbles(NUM_BUBBLES, canvas.width, canvas.height)
@@ -224,10 +281,9 @@
         var pid_x0 = [0, 0];   // Initial condition
         var pid_xt = 0.0; // Setpoint
         var pid_Kp = 0.5; // Proportional gain
-        var pid_tf = 5;  // final sim time
-        var pid_dt = TIME_INTERVAL_MS / 1000;
-        var MIN_X0 = 25;
-        var MAX_X0 = 45;
+        var pid_tf = SIM_TF;
+        var pid_dt = SIM_DT;
+
 
         // PID control example charts
         pid_charts = pid_chart_generator("#x-chart-pid-control", "#u-chart-pid-control", pid_tf, TIME_INTERVAL_MS);
@@ -238,7 +294,6 @@
 
         var pid_control_run = false;
         var pid_control_reset = false;
-        var first_run = true;
 
         var pid_charts_dict = {
             x_chart: x_chart_1,
@@ -265,7 +320,52 @@
         };
         // reset to initialize
         example_reset(pid_x_data, pid_pid_data);
-        console.log(pid_x_data)
+
+
+        /**
+         * BANG-BANG EXAMPLE
+         */
+
+        // BB Canvas
+        var bb_canvas = document.getElementById("draw-sim-bb-control-canvas");
+        var bb_ctx = bb_canvas.getContext("2d");
+        initBubbles(NUM_BUBBLES, bb_canvas.width, bb_canvas.height);
+
+        bb_charts = pid_chart_generator("#x-chart-bb-control", "#u-chart-bb-control", SIM_TF, TIME_INTERVAL_MS);
+        x_chart_bb = bb_charts[0];
+        u_chart_bb = bb_charts[1];
+        x_chart_bb.render();
+        u_chart_bb.render();
+
+        var bb_control_run = false;
+        var first_run = true;
+
+        var bb_charts_dict = {
+            x_chart: x_chart_bb,
+            u_chart: u_chart_bb
+        };
+
+        // Example data
+        var bb_sim_data = {
+            t: 0,
+            x: [0, 0],
+            setpoint: 0.0,
+            power: 1,
+            thresh: 0,
+            dt: SIM_DT,
+            prev_error: 0,
+            integrator: 0
+        };
+        var bb_x_data = {
+            series: []
+        };
+        var bb_u_data = {
+            series: []
+        };
+        // reset to initialize
+        bb_example_reset(bb_x_data, bb_u_data);
+        console.log(bb_x_data)
+
 
         function run_pid_sim() {
             // Set state to running
@@ -286,6 +386,24 @@
             new_x0(pid_sim_data);
         }
 
+        function run_bb_sim() {
+            // Set state to running
+            bb_control_run = true;
+
+            // Reset the views.
+            bb_example_reset(bb_x_data, bb_u_data);
+            bb_sim_data.prev_error = 0;
+            bb_sim_data.integrator = 0;
+            bb_sim_data.t = 0;
+
+            // Get user input.
+            bb_sim_data.power = parseFloat(document.getElementById("bb-power-input").value);
+            bb_sim_data.thresh = parseFloat(document.getElementById("thresh-input").value);
+
+            // Come up with new initial condition.
+            new_x0(bb_sim_data);
+        }
+
         function new_x0(sim_data) {
             // Generate random initial condition.
             var x0_range = MAX_X0 - MIN_X0;
@@ -300,18 +418,10 @@
         }
 
         window.setInterval(function () {
-            // If this is the first run, draw the AUV to initialize the scene.
-            if (first_run) {
-                drawAUV(canvas, ctx, pid_sim_data.x[0])
-            }
-
             // If PID control example is running, manage it.
             if (pid_control_run) {
                 // Run the simulation
                 pid_control_sim(pid_x_data.series, pid_pid_data.series, pid_sim_data);
-
-                // Draw the example
-                drawAUV(canvas, ctx, pid_sim_data.x[0])
 
                 // Update charts
                 pid_charts_dict.pid_chart.updateSeries(pid_pid_data.series);
@@ -321,6 +431,29 @@
                     pid_control_run = false;
                 }
             }
+
+            // If the BB control example is running, manage it.
+            if (bb_control_run) {
+                // Run the simulation
+                bb_control_sim(bb_x_data.series, bb_u_data.series, bb_sim_data);
+
+                // Draw the example
+                console.log(bb_sim_data.x[0])
+
+                // Update charts
+                bb_charts_dict.u_chart.updateSeries(bb_u_data.series);
+                bb_charts_dict.x_chart.updateSeries(bb_x_data.series);
+
+                if (bb_sim_data.t > SIM_TF) {
+                    bb_control_run = false;
+                }
+            }
+
+            // Draw the PID example
+            drawAUV(canvas, ctx, pid_sim_data.x[0]);
+
+            // Draw the BB sim example
+            drawAUV(bb_canvas, bb_ctx, bb_sim_data.x[0])
 
 
 
