@@ -143,7 +143,7 @@
 
                         <div class="wrapper-2x2">
                             <div id="bb-control-inputs" class="example-inputs">
-                                <b>PID Gains</b>
+                                <b>Bang-Bang Control Parameters</b>
                                 <div class="example-input-panel">
 
                                     <p class="example-user-input-container">
@@ -156,7 +156,7 @@
                                         <input type="number" id="thresh-input" class="example-user-input" value="0.0">
                                     </p>
 
-                                    <button onclick="run_bb_sim()">Go!</button>
+                                    <button onclick="run_bb_sim()" class="example-button">Go!</button>
 
                                 </div>
                             </div>
@@ -167,7 +167,7 @@
                             <div id="x-chart-bb-control" class="realtime-example-chart"></div>
                             <div id="u-chart-bb-control" class="realtime-example-chart"></div>
                         </div>
-
+                        <!-- Power: 35, deadband: 10 -->
 
 
 
@@ -236,7 +236,7 @@
                                         <input type="number" id="kd-input" class="example-user-input" value="0.0">
                                     </p>
 
-                                    <button onclick="run_pid_sim()">Go!</button>
+                                    <button onclick="run_pid_sim()" class="example-button">Go!</button>
 
                                 </div>
                             </div>
@@ -248,7 +248,7 @@
                             <div id="u-chart-pid-control" class="realtime-example-chart"></div>
                         </div>
 
-
+                        <!-- P: 2, I: 0.01, D: 0.75 -->
 
 
                     </div>
@@ -263,10 +263,11 @@
         // Simulation Constants
         let TIME_INTERVAL_MS = 100;
         let NUM_BUBBLES = 7;
-        let SIM_TF = 5; // final sim time
+        let SIM_TF = 10; // final sim time
         let SIM_DT = TIME_INTERVAL_MS / 1000;
         let MIN_X0 = 25;
         let MAX_X0 = 45;
+        let HINT_TRIES = 7;
 
         /**
          * PID EXAMPLE
@@ -283,6 +284,7 @@
         var pid_Kp = 0.5; // Proportional gain
         var pid_tf = SIM_TF;
         var pid_dt = SIM_DT;
+        var pid_tries = 0;
 
 
         // PID control example charts
@@ -338,7 +340,7 @@
         u_chart_bb.render();
 
         var bb_control_run = false;
-        var first_run = true;
+        var bb_tries = 0;
 
         var bb_charts_dict = {
             x_chart: x_chart_bb,
@@ -370,6 +372,7 @@
         function run_pid_sim() {
             // Set state to running
             pid_control_run = true;
+            pid_tries += 1;
 
             // Reset the views.
             example_reset(pid_x_data, pid_pid_data);
@@ -389,7 +392,7 @@
         function run_bb_sim() {
             // Set state to running
             bb_control_run = true;
-
+            bb_tries += 1;
             // Reset the views.
             bb_example_reset(bb_x_data, bb_u_data);
             bb_sim_data.prev_error = 0;
