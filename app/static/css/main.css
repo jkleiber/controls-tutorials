@@ -98,7 +98,7 @@ body {
 }
 
 .lesson-img {
-    margin-top: -15%;
+    margin-top: -10%;
     width: 100%;
     height: auto;
 }
@@ -240,7 +240,7 @@ hr {
 
 .wrapper-2x2 {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, auto);
     gap: 10px;
     grid-auto-rows: auto;
 }
@@ -275,6 +275,12 @@ label.example-user-input {
 
 input.example-user-input {
     display: table-cell;
+}
+
+.example-img-container {
+    padding-top: 20px;
+    align-content: center;
+    text-align: center;
 }
 
 .example-button {

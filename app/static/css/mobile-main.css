@@ -66,6 +66,22 @@ body {
     min-width: 200px;
 }
 
+.lesson-scroller {
+    align-self: center;
+    margin: 0 auto;
+    width: 90%;
+    min-width: 200px;
+    display: grid;
+    /* flex-wrap: wrap; */
+    align-items: center;
+    justify-content: center;
+
+    /* display: flex;
+    flex-direction: column;
+    height: 80%;
+    width: 100%; */
+}
+
 .lesson-block {
     border-radius: 5px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -82,7 +98,7 @@ body {
 }
 
 .lesson-img {
-    margin-top: -15%;
+    margin-top: -10%;
     width: 100%;
     height: auto;
 }
@@ -158,6 +174,134 @@ hr {
     border-color: rgb(197, 0, 0);
     width: 90%;
     /* margin-left: 0; */
+}
+
+
+/* Lesson Text */
+.lesson-text {
+    width: 80%;
+    display: block;
+    margin: 0 auto;
+    padding: 15px;
+    word-wrap: break-word;
+}
+
+/* Definition */
+.definition-block {
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin: 0 auto;
+    overflow: hidden;
+    width: 80%;
+    /* margin-bottom: 20px; */
+}
+
+.definition-frame {
+    padding: 10px;
+}
+
+.definition-header {
+    background-color: rgb(144, 1, 1);
+    color: rgb(255, 255, 255);
+    padding: 10px;
+    font-weight: 400;
+    font-size: 18px;
+}
+
+.definition-img {
+    display: flex;
+    margin: 0 auto;
+}
+
+/* Example Entries */
+.example-summary {
+    width: 100%;
+    padding-bottom: 20px;
+}
+
+.example-block {
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin: 0 auto;
+    overflow: hidden;
+    width: 80%;
+}
+
+.example-frame {
+    padding: 20px;
+}
+
+.example-header {
+    background-color: rgb(144, 1, 1);
+    color: rgb(255, 255, 255);
+    padding: 20px;
+    font-weight: 400;
+    font-size: 24px;
+}
+
+/* This doesn't fit 2x2 on mobile screens */
+.wrapper-2x2 {
+    display: block;
+}
+
+
+.realtime-example-chart {
+    display: flex;
+    /* width: 50%; */
+}
+
+.example-drawing {
+    width: 100%;
+}
+
+.example-inputs {
+    width: 100%;
+}
+
+.example-input-panel {
+    display: table;
+    border-spacing: 10px;
+}
+
+p.example-user-input-container {
+    display: table-row;
+    padding: 10px;
+}
+
+label.example-user-input {
+    display: table-cell;
+}
+
+input.example-user-input {
+    display: table-cell;
+}
+
+.example-img-container {
+    padding-top: 20px;
+    align-content: center;
+    text-align: center;
+}
+
+.example-button {
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(1, 144, 57);
+    border-width: 2px;
+    border-style: solid;
+    color: rgb(1, 144, 57);
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: 400;
+
+}
+
+.example-button:hover {
+    background-color: rgb(1, 144, 57);
+    color: white;
 }
 
 /* Button / Link Styles */

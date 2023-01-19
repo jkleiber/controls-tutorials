@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
     <!-- Page Layout -->
-    <link rel="stylesheet" href="static/css/main.css" media='screen and (min-width: 800px)' />
-    <link rel="stylesheet" href="static/css/mobile-main.css" media='screen and (max-width: 800px)' />
+    <link rel="stylesheet" href="static/css/main.css" media='screen and (min-width: 1300px)' />
+    <link rel="stylesheet" href="static/css/mobile-main.css" media='screen and (max-width: 1300px)' />
     <link rel="stylesheet" href="static/css/nav.css" />
 
     <!-- Themes -->
@@ -32,7 +32,18 @@
 
     <!-- MathJax -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            CommonHTML: { linebreaks: { automatic: true } },
+            "HTML-CSS": { linebreaks: { automatic: true } },
+            SVG: { linebreaks: { automatic: true } }           
+        });
+    </script>
+    <!-- Using MathJax 2 until automatic line wrapping is supported in version 3 -->
+    <!-- <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> -->
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
 
     <!-- PID Control demo JS -->
     <script src="static/js/pid_control_demo.js"></script>
@@ -95,6 +106,10 @@
                         A general mathematical form for a dynamical system is the differential equation:
                         \[\dot x = f(x, u, t)\]
 
+                        What this is saying is that the system changes its state with some rate of change
+                        known as \(\dot x\). In dynamical systems that have position as a state, \(\dot x\) is known as
+                        the velocity and \(\ddot x\) is the acceleration. <br><br>
+
                         <i>Examples: </i> Cars, airplanes, boats, and robots are examples of dynamical systems
                     </div>
                 </div>
@@ -123,10 +138,17 @@
 
                     While this works well for your house, imagine using this to control a robot, or another system whose
                     state changes fast. The controller would be constantly turning on and off, and the system may
-                    oscillate aggressively.
+                    oscillate aggressively.<br><br>
+
+                    In the example below, try to stabilize the submarine by tuning the
+                    control parameters of a bang-bang controller. The goal is to get the submarine's pitch angle to 0
+                    degrees (level flight through the water). When you get it working, there will be some large
+                    oscillations and it won't come to a stop, but it will be better than nothing.<br><br>
+
+                    <b>Design Goal:</b> Keep the submarine from becoming unstable (flipping over).
                 </p>
 
-                <!-- PID Control -->
+                <!-- Bang-Bang Control -->
                 <div class="example-block">
                     <!-- <div class="lesson-img-frame">
                         <img src="/static/img/quadcopter-cad.png" class="lesson-gif"></img>
@@ -155,9 +177,10 @@
                                             (deg)</label>
                                         <input type="number" id="thresh-input" class="example-user-input" value="0.0">
                                     </p>
-
-                                    <button onclick="run_bb_sim()" class="example-button">Go!</button>
-
+                                </div>
+                                <button onclick="run_bb_sim()" class="example-button">Go!</button>
+                                <div class="example-img-container">
+                                    <img src="static/img/bang-bang-control.png" class="definition-img"></img>
                                 </div>
                             </div>
                             <div id="draw-sim-bb-control-container">
@@ -167,12 +190,37 @@
                             <div id="x-chart-bb-control" class="realtime-example-chart"></div>
                             <div id="u-chart-bb-control" class="realtime-example-chart"></div>
                         </div>
-                        <!-- Power: 35, deadband: 10 -->
-
-
-
                     </div>
                 </div>
+                <p class="lesson-text">
+                    That probably took a lot of effort to get working well, so good job if you were able to stabilize
+                    the submarine! Seeing this control performance should make you wonder some of the
+                    following questions:<br>
+                </p>
+
+                <div class="lesson-text">
+                    <ul>
+                        <li>How can we reduce oscillations in the system?</li>
+                        <li>How can we use less control power/energy to drive the system?</li>
+                        <ul>
+                            <li>This is something important to consider when working on real systems. Real actuators
+                                wear
+                                down faster if used heavily, so a good controller will stabilize the system using a
+                                lower
+                                amount of energy.</li>
+                        </ul>
+                        <li>Can the system be stabilized faster?</li>
+                        <li>What can we do to not overshoot the target as much?</li>
+                    </ul>
+                </div>
+
+                <p class="lesson-text">
+                    These questions are closely related to "performance metrics." Performance metrics won't be covered
+                    in
+                    great detail here, but ideally we want to make a controller that can do well at the things asked in
+                    those questions. In the next section, we will talk about PID control, which is a very popular
+                    controller and does fairly well at addressing these questions.
+                </p>
 
 
                 <div class="section-title">
@@ -181,8 +229,156 @@
                 </div>
 
                 <p class="lesson-text">
-                    PID stands for Proportional Integral Derivative control.
+                    PID stands for Proportional Integral Derivative control. As you might derive from the name, there
+                    are three parts to the basic PID controller. All of these parts operate on the "error" of the
+                    system, which is the difference between where the system is and where you want it to go.
+                    Mathematically, this is represented by the function \(e(t)\):
+                    \[
+                    e(t) = x_{goal}(t) - x_{current}(t) = r(t) - x(t)
+                    \]
+                    where \(r(t)\) is known as the reference (the target value, your goal) and \(x(t)\) is the current
+                    state of the system. The entire PID control is calculated as follows:
+                    \[
+                    u_{PID}(t) = u_p(t) + u_i(t) + u_d(t) \\
+                    = K_p * e(t) + K_i * \int_0^{t} e(t) dt + K_d * \frac{d}{dt}e(t)
+                    \]
+                    and an approximation used by computers might be:
+                    \[
+                    u_{PID}(t) \approx K_p * e(t) + \sum_{i=0}^N K_i * e(t_i) \Delta t + K_d * \frac{e(t) - e(t - \Delta
+                    t)}{\Delta t}
+                    e(t)
+                    \]
                 </p>
+
+
+                <p class="lesson-text">
+                    Now, let's see how proportional control uses the error function:
+                </p>
+
+                <div class="definition-block">
+                    <div class="definition-header">Definition</div>
+                    <div class="definition-frame">
+                        <b>Proportional Control - </b>A control technique which multiplies the error by some constant
+                        when computing a control value<br><br>
+
+                        Let's name our control value \(u_p(t)\), which will represent the control at a given time,
+                        \(t\). Then a proportional control law would be:
+                        \[
+                        u_p(t) = K_p * e(t) = K_p * [r(t) - x(t)]
+                        \]
+                    </div>
+                </div>
+
+                <p class="lesson-text">
+                    Intuitively, the proportional controller makes sense. You multiply the error by some constant,
+                    \(K_p\) in this case, and get the control you should apply to the system. More error results in a
+                    stronger control input, and less error means the controller does less work. <br><br>
+
+                    This sounds pretty good, and it is. However, proportional control on its own experiences the same
+                    oscillations as bang-bang control, albeit smaller (since control is proportional to the error). This
+                    motivates us to combine it with other control types - the next one we will look at is integral
+                    control.
+                </p>
+
+                <div class="definition-block">
+                    <div class="definition-header">Definition</div>
+                    <div class="definition-frame">
+                        <b>Integral Control - </b>A control technique which integrates the error function and multiplies
+                        it by a constant in order to find the control output<br><br>
+
+                        Put simply, integral control "piles up" the error from previous states of the system and uses
+                        that to determine a control output. In this tutorial, we will only consider pure integrators
+                        (i.e. no anti-windup protection or any tricks to make sure the integrator doesn't grow without
+                        bound), however modified integral control is a best-practice that can be covered another time.
+                        <br><br>
+
+                        Mathematically, let's name our control value \(u_i(t)\), which will represent the integral
+                        control at a given time,
+                        \(t\). Then a integral control law would be:
+                        \[
+                        u_i(t) = K_i * \int_0^{t} e(t) dt = \int_0^{t} K_i * e(t) dt \approx \sum_{i=0}^N K_i * e(t_i)
+                        \Delta t
+                        \]
+
+                        <b>Note:</b> You don't need to know calculus to intuitively understand what the integral is
+                        doing. It is finding the area under the error curve by summing up error at each timestep, as
+                        shown by the approximation on the right of the equation.
+                    </div>
+                </div>
+
+                <p class="lesson-text">
+                    Integrals are used in calculus to find the area under some curve, in this case the error function.
+                    However, integrals in computers aren't typically solved analytically, and instead use an
+                    approximation similar to the one above. Let's take a closer look:
+                </p>
+
+                <div class="example-img-container">
+                    <img src="static/img/riemann_sum.png" class="definition-img" height="400px"></img>
+                    Integral approximation using a Riemann sum: <a
+                        href="https://en.wikipedia.org/wiki/Riemann_sum#/media/File:Riemann_sum_convergence.png">Source</a>
+                </div>
+
+                <p class="lesson-text">
+                    In the above image, you can see how we can use small rectangles to approximate the area under a
+                    curve provided by a function. For an integral controller, the width of the rectangle is determined
+                    by how much time passes between error measurements, \(\Delta t\), and the height is the error
+                    itself.<br><br>
+
+                    Having \(K_i \neq 0\) means that integral control is active. If integral control is active and
+                    stabilizes the system, then
+                    eventually the system will come to rest exactly on the target. However, integral control is not
+                    often used on
+                    its own due to inherent stability issues. For example - what if you accumulate too much error
+                    and can't recover? Integral control is also slower than proportional control at responding to error,
+                    so for systems that need a quick reaction time, it needs to be paired with proportional. But both of
+                    these together can cause aggressive maneuvers and induce oscillations in the system before it
+                    steadies out. This is why we have our third type of control - derivative control:
+                </p>
+
+                <div class="definition-block">
+                    <div class="definition-header">Definition</div>
+                    <div class="definition-frame">
+                        <b>Derivative Control - </b>A control technique which multiplies a constant by the derivative of
+                        the error function in order to find the control output<br><br>
+
+                        Put simply, derivative control chooses the control output based on the rate of change of the
+                        error. If the error is changing rapidly, the magnitude of the derivative control is large. If
+                        the error is moving slowly, then derivative control doesn't do as much.
+                        <br><br>
+
+                        This is important when you consider the sign of the error function. If the error function is
+                        positive and <b>decreasing</b> fast (perhaps driven by a positive proportional control law since
+                        \(e(t)
+                        > 0\) implies that \(u_p(t) > 0\)), then the derivative
+                        control may be very negative. Similarly, if the error function is negative and increasing fast
+                        (toward 0 error), then the derivative control may be very positive. Thus, the derivative control
+                        is often used to counteract the aggressive proportional and integral controllers.
+                        <br><br>
+
+                        Mathematically, let's name our control value \(u_d(t)\), which will represent the derivative
+                        control at a given time,
+                        \(t\). Then the derivative control law would be:
+                        \[
+                        u_d(t) = K_d * \frac{d}{dt} e(t) \approx K_d * \frac{e(t) - e(t - \Delta t)}{\Delta t}
+                        \]
+                        where \(\Delta t\) is the time between error measurements.<br><br>
+
+                        <b>Note:</b> You don't need to know calculus to intuitively understand what the derivative is
+                        doing. The derivative is the <b>slope</b> of the error function - it is how fast it is changing.
+                        In fact, the "rise-over-run" slope calculation is often used to approximate the derivative in
+                        real control systems
+                    </div>
+                </div>
+
+                <p class="lesson-text">
+                    While the derivative controller is almost never used on its own, it is a great tool to have when
+                    trying to get your PID controller to settle down. The derivative control "dampens out" the system
+                    response to control, which is very helpful when tuning the PID controller. We will discuss a way to
+                    tune PID controllers next.
+                </p>
+
+
+
 
                 <div class="section-title">
                     Tuning PID Controllers
@@ -190,12 +386,96 @@
                 </div>
 
                 <p class="lesson-text">
+                    Being able to implement PID controllers from scratch is a good skill to have. Oftentimes however,
+                    you will be given one that already exists and need to tune it. Tuning the controller means adjusting
+                    its "gains", or the three coefficients \(K_p, K_i, K_d\), to get good performance in solving the
+                    control problem.<br><br>
+
                     There are three knobs you can turn to adjust your PID controller: the proportional gain \(K_p\),
-                    integral gain \(K_i\), and derivative gain \(K_d\).<br><br>
+                    integral gain \(K_i\), and derivative gain \(K_d\). There are many techniques out there for
+                    tuning PID controllers (picking the values for those three knobs) - see the list below for details:
+                </p>
 
+                <div class="lesson-text">
+                    <b>PID Tuning Methods</b>
+                    <ul>
+                        <li>Trial and Error</li>
+                        <ul>
+                            <li>Pro: This is easy to set up - you just need the system itself and can test it out until
+                                it works well enough</li>
+                            <li>Con: This can require a lot of time to tune. It also may be dangerous to the system if
+                                the tuning parameters are bad. It is recommended to test this in simulation first.</li>
+                        </ul>
+                        <li>Rule-based methods</li>
+                        <ul>
+                            <li>The Ziegler-Nichols Method and Cohen-Coon Method are popular examples of this type of
+                                tuning approach</li>
+                            <li>Pro: This is also easy to set up - you just need the system itself and can test it out
+                                until
+                                it works well enough. Additionally it can take less time because you are following a
+                                mathematical procedure for picking the gains</li>
+                            <li>Con: Rule-based methods aren't ideal for every system, and mainly target certain
+                                performance characteristics. If those characteristics aren't good for your system, or
+                                the rules aren't very applicable, then the method won't work well. This also doesn't
+                                change the fact that it may be dangerous to tune the real system. It is recommended to
+                                test this in simulation first.</li>
+                        </ul>
+                        <li>Optimization-based approaches</li>
+                        <ul>
+                            <li>Pro: This type of method allows you to let the computer trade-off multiple design
+                                factors for you automatically, which can be really powerful during control design</li>
+                            <li>Con: This typically requires a mathematical model of the system being controlled</li>
+                        </ul>
+                    </ul>
+                </div>
 
-                    Test below to see how adjusting the PID gains results in different trajectories for our underwater
-                    vehicle system.
+                <p class="lesson-text">
+                    You can find more about these methods by looking them up. Here's a method that falls under the
+                    "Trial and Error" umbrella, but does set up a process to follow (similar to rule-based tuning):
+                </p>
+
+                <div class="lesson-text">
+                    <b>Justin's PID Tuning Technique</b>
+                    <ol>
+                        <li>Start by adjusting \(K_p\). Typically I set \(K_p = 1\) to start, and see how the system
+                            responds</li>
+                        <li>If the system is moving way too aggressively, reduce \(K_p\). If the system isn't stable
+                            because it is moving too slowly, increase \(K_p\).</li>
+                        <li>Once the system is oscillating, but stable, add derivative using \(K_d\)</li>
+                        <ol>
+                            <li>Increase derivative to reduce the oscillations some</li>
+                            <li>Once the oscillations have calmed down to a reasonable level, move onto integral
+                                control.</li>
+                        </ol>
+                        <li>Set integral \(K_i\) to a very low value (Typically I start with \(K_i \approx 0.001\)
+                            depending on the system)</li>
+                        <ol>
+                            <li>Increase \(K_i\) by small amounts to increase convergence to the target</li>
+                            <li>Reduce \(K_i\) if oscillations start appearing. You can also increase \(K_d\) and see if
+                                that helps</li>
+                        </ol>
+                        <li>At this point you should have a control system that performs fairly well. From here you can
+                            adjust the gains to get slightly better performance using the following rules:</li>
+                        <ol>
+                            <li>Increasing \(K_p\) will result in faster control and more overshoot and larger
+                                oscillations near steady state. Decreasing it
+                                will result in slower control response, but at the benefit of less overshoot and smaller
+                                oscillations</li>
+                            <li>Increasing \(K_i\) will result in faster convergence to the target (reference) but comes
+                                at the cost of more potential overshoot and oscillations.</li>
+                            <li>Increasing \(K_d\) can reduce oscillation size, while also reducing the system's
+                                response speed</li>
+                        </ol>
+                    </ol>
+                </div>
+
+                <p class="lesson-text">
+                    Use this method, or any of the above methods to tune the PID gains in order to stabilize the
+                    submarine system from earlier. Remember, we want the pitch angle of the vehicle to be as close to 0
+                    as possible, and we want the vehicle to travel smoothly (settle out quickly, with few if any
+                    oscillations).<br><br>
+
+                    <b>Design Goal:</b> Get the submarine to less than \(\pm 0.5\) degrees error in under 4 seconds.
                 </p>
 
 
@@ -211,11 +491,7 @@
 
                     <div class="example-frame">
                         <div class="example-summary">
-                            P = Proportional
 
-                            I = Integral
-
-                            D = Derivative
                         </div>
 
                         <div class="wrapper-2x2">
@@ -236,8 +512,10 @@
                                         <input type="number" id="kd-input" class="example-user-input" value="0.0">
                                     </p>
 
-                                    <button onclick="run_pid_sim()" class="example-button">Go!</button>
-
+                                </div>
+                                <button onclick="run_pid_sim()" class="example-button">Go!</button>
+                                <div class="example-img-container">
+                                    <img src="static/img/pid-control.png" class="definition-img"></img>
                                 </div>
                             </div>
                             <div id="draw-sim-pid-control-container">
@@ -247,12 +525,50 @@
                             <div id="x-chart-pid-control" class="realtime-example-chart"></div>
                             <div id="u-chart-pid-control" class="realtime-example-chart"></div>
                         </div>
-
-                        <!-- P: 2, I: 0.01, D: 0.75 -->
-
-
                     </div>
                 </div>
+
+                <p class="lesson-text">
+                    Once you get your PID controller tuned, you can see that it is much better at stabilizing the
+                    submarine pitch angle than the bang-bang controller. The PID controller is also fairly simple and
+                    doesn't take much time to get working, which is one of the reasons it is the most popular type of
+                    controller used in industry.
+                </p>
+
+                <div class="section-title">
+                    Conclusion
+                    <hr>
+                </div>
+
+                <p class="lesson-text">
+                    In this tutorial, you were introduced to some fundamental ideas in control theory:
+                </p>
+
+                <div class="lesson-text">
+                    <ul>
+                        <li>Dynamical systems</li>
+                        <li>Performance metrics</li>
+                        <li>PID control</li>
+                    </ul>
+                </div>
+
+                <p class="lesson-text">
+                    In future tutorials I plan on covering topics in control theory to help you learn to design a
+                    control system end-to-end. Such topics include:
+                </p>
+
+                <div class="lesson-text">
+                    <ul>
+                        <li>System identification</li>
+                        <li>Performance Metrics</li>
+                        <li>Improved PID</li>
+                        <li>Linear systems</li>
+                        <li>Advanced control design (such as LQR, \(H_{\infty}\), MPC)</li>
+                        <li>Nonlinear systems</li>
+                        <li>Observers (Kalman Filtering)</li>
+                    </ul>
+                </div>
+
 
             </div>
             <div data-include="footer"></div>
@@ -366,7 +682,6 @@
         };
         // reset to initialize
         bb_example_reset(bb_x_data, bb_u_data);
-        console.log(bb_x_data)
 
 
         function run_pid_sim() {
@@ -439,9 +754,6 @@
             if (bb_control_run) {
                 // Run the simulation
                 bb_control_sim(bb_x_data.series, bb_u_data.series, bb_sim_data);
-
-                // Draw the example
-                console.log(bb_sim_data.x[0])
 
                 // Update charts
                 bb_charts_dict.u_chart.updateSeries(bb_u_data.series);

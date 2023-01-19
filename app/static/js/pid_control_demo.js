@@ -256,8 +256,6 @@ const bb_control_sim = async(x_data, bb_data, sim_data) => {
     // Update dynamics
     var xdot = second_order_sys(sim_data.x, u, sys_params);
 
-    console.log("u: " + u + " xdot: " + xdot)
-
     // Integrate
     sim_data.x[0] += xdot[0] * dt;
     sim_data.x[1] += xdot[1] * dt;
