@@ -430,47 +430,12 @@
                 </div>
 
                 <p class="lesson-text">
-                    You can find more about these methods by looking them up. Here's a method that falls under the
-                    "Trial and Error" umbrella, but does set up a process to follow (similar to rule-based tuning):
+                    You can find more about these methods by looking them up.
                 </p>
 
-                <div class="lesson-text">
-                    <b>Justin's PID Tuning Technique</b>
-                    <ol>
-                        <li>Start by adjusting \(K_p\). Typically I set \(K_p = 1\) to start, and see how the system
-                            responds</li>
-                        <li>If the system is moving way too aggressively, reduce \(K_p\). If the system isn't stable
-                            because it is moving too slowly, increase \(K_p\).</li>
-                        <li>Once the system is oscillating, but stable, add derivative using \(K_d\)</li>
-                        <ol>
-                            <li>Increase derivative to reduce the oscillations some</li>
-                            <li>Once the oscillations have calmed down to a reasonable level, move onto integral
-                                control.</li>
-                        </ol>
-                        <li>Set integral \(K_i\) to a very low value (Typically I start with \(K_i \approx 0.001\)
-                            depending on the system)</li>
-                        <ol>
-                            <li>Increase \(K_i\) by small amounts to increase convergence to the target</li>
-                            <li>Reduce \(K_i\) if oscillations start appearing. You can also increase \(K_d\) and see if
-                                that helps</li>
-                        </ol>
-                        <li>At this point you should have a control system that performs fairly well. From here you can
-                            adjust the gains to get slightly better performance using the following rules:</li>
-                        <ol>
-                            <li>Increasing \(K_p\) will result in faster control and more overshoot and larger
-                                oscillations near steady state. Decreasing it
-                                will result in slower control response, but at the benefit of less overshoot and smaller
-                                oscillations</li>
-                            <li>Increasing \(K_i\) will result in faster convergence to the target (reference) but comes
-                                at the cost of more potential overshoot and oscillations.</li>
-                            <li>Increasing \(K_d\) can reduce oscillation size, while also reducing the system's
-                                response speed</li>
-                        </ol>
-                    </ol>
-                </div>
 
                 <p class="lesson-text">
-                    Use this method, or any of the above methods to tune the PID gains in order to stabilize the
+                    Use any of the above methods (or create your own!) to tune the PID gains in order to stabilize the
                     submarine system from earlier. Remember, we want the pitch angle of the vehicle to be as close to 0
                     as possible, and we want the vehicle to travel smoothly (settle out quickly, with few if any
                     oscillations).<br><br>
@@ -525,6 +490,51 @@
                             <div id="x-chart-pid-control" class="realtime-example-chart"></div>
                             <div id="u-chart-pid-control" class="realtime-example-chart"></div>
                         </div>
+                    </div>
+                </div>
+
+                <p class="lesson-text">
+                    Here's a method that happens to work fairly well for tuning the submarine if you are stuck:
+                </p>
+
+                <div class="definition-block">
+                    <div class="definition-header">Submarine Tuning Method</div>
+                    <div class="definition-frame">
+                        <ol>
+                            <li>Start by adjusting \(K_p\). Typically I set \(K_p = 1\) to start, and see how the system
+                                responds</li>
+                            <li>If the system is moving way too aggressively, reduce \(K_p\). If the system isn't stable
+                                because it is moving too slowly, increase \(K_p\).</li>
+                            <li>Once the system is oscillating, but stable, add derivative using \(K_d\)</li>
+                            <ol>
+                                <li>Increase derivative to reduce the oscillations some</li>
+                                <li>Once the oscillations have calmed down to a reasonable level, move onto integral
+                                    control.</li>
+                            </ol>
+                            <li>Set integral \(K_i\) to a very low value (Typically I start with \(K_i \approx 0.001\)
+                                depending on the system)</li>
+                            <ol>
+                                <li>Increase \(K_i\) by small amounts to increase convergence to the target</li>
+                                <li>Reduce \(K_i\) if oscillations start appearing. You can also increase \(K_d\) and
+                                    see if
+                                    that helps</li>
+                            </ol>
+                            <li>At this point you should have a control system that performs fairly well. From here you
+                                can
+                                adjust the gains to get slightly better performance using the following rules:</li>
+                            <ol>
+                                <li>Increasing \(K_p\) will result in faster control and more overshoot and larger
+                                    oscillations near steady state. Decreasing it
+                                    will result in slower control response, but at the benefit of less overshoot and
+                                    smaller
+                                    oscillations</li>
+                                <li>Increasing \(K_i\) will result in faster convergence to the target (reference) but
+                                    comes
+                                    at the cost of more potential overshoot and oscillations.</li>
+                                <li>Increasing \(K_d\) can reduce oscillation size, while also reducing the system's
+                                    response speed</li>
+                            </ol>
+                        </ol>
                     </div>
                 </div>
 
